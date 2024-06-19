@@ -68,13 +68,13 @@
         button:hover {
             background-color: #0056b3;
         }
-        .suggestions, .email {
+        .suggestions, .contato {
             margin-top: 20px;
         }
-        .suggestions h2, .email h2 {
+        .suggestions h2, .contato h2 {
             margin-top: 0;
         }
-        .suggestions textarea, .email input {
+        .suggestions textarea, .contato input {
             width: 100%;
             padding: 10px;
             border-radius: 4px;
@@ -82,7 +82,7 @@
             margin-top: 10px;
             box-sizing: border-box;
         }
-        .email input {
+        .contato input {
             margin-bottom: 20px;
         }
         .responses {
@@ -125,7 +125,7 @@
             <img src="https://i.postimg.cc/d7qbkdwX/logo-cer-II-2.png" alt="Logo CER">
         </div>
         <h1>Pesquisa de Satisfação</h1>
-       <form id="survey-form" action="/.netlify/functions/saveResponse" method="POST">
+        <form id="survey-form" name="survey" method="POST" data-netlify="true">
             <div class="question">
                 <p>1. Como você avalia a estrutura física da nossa unidade?</p>
                 <div class="options">
@@ -177,8 +177,8 @@
                 </div>
             </div>
             <div class="contato">
-                <h2>Contato para devolutiva</h2>
-                <input type="contato" name="contato" placeholder="Digite seu telefone (opcional)">
+                <h2>Contato para devolutiva (opcional)</h2>
+                <input type="text" name="contato" placeholder="Digite seu contato (opcional)">
             </div>
             <div class="suggestions">
                 <h2>Sugestões</h2>
@@ -192,44 +192,28 @@
             <input type="password" id="password-input" placeholder="Senha">
             <button onclick="checkPassword()">Entrar</button>
         </div>
-        <div class="responses" id="responses-section">
+        <div id="responses-section" class="responses">
             <h2>Respostas Registradas</h2>
             <div id="responses-list"></div>
         </div>
     </div>
     <script>
-        const correctPassword = 'admcer321';
-
-        document.getElementById('survey-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            const response = {};
-            formData.forEach((value, key) => {
-                response[key] = value;
-            });
-
-            let responses = JSON.parse(localStorage.getItem('responses')) || [];
-            responses.push(response);
-            localStorage.setItem('responses', JSON.stringify(responses));
-            alert('Resposta enviada com sucesso!');
-            this.reset();
-        });
-
         function checkPassword() {
             const password = document.getElementById('password-input').value;
-            if (password === correctPassword) {
+            if (password === 'admcer321') {
                 document.getElementById('password-prompt').style.display = 'none';
                 document.getElementById('responses-section').style.display = 'block';
-                displayResponses();
+                fetchResponses();
             } else {
                 alert('Senha incorreta!');
             }
         }
 
-        function displayResponses() {
-            const responses = JSON.parse(localStorage.getItem('responses')) || [];
+        async function fetchResponses() {
+            const responses = await fetch('/.netlify/functions/getResponses').then(res => res.json());
             const responsesList = document.getElementById('responses-list');
             responsesList.innerHTML = '';
+
             responses.forEach((response, index) => {
                 const responseDiv = document.createElement('div');
                 responseDiv.classList.add('response');
@@ -240,16 +224,12 @@
                     <p><strong>Atendimento Recepção:</strong> ${response.atendimento_recepcao}</p>
                     <p><strong>Cordialidade Profissionais:</strong> ${response.cordialidade_profissionais}</p>
                     <p><strong>Competência Profissionais:</strong> ${response.competencia_profissionais}</p>
-                    <p><strong>Email:</strong> ${response.email || 'Não fornecido'}</p>
+                    <p><strong>Contato:</strong> ${response.contato || 'Não fornecido'}</p>
                     <p><strong>Sugestões:</strong> ${response.sugestoes || 'Nenhuma'}</p>
                 `;
                 responsesList.appendChild(responseDiv);
             });
         }
-
-        window.onload = function() {
-            document.getElementById('password-prompt').style.display = 'block';
-        };
     </script>
 </body>
 </html>
